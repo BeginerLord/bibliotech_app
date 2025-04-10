@@ -1,0 +1,11 @@
+export const PublicRoutes = {
+  LOGIN: "/Auth/login",
+  SIGNUP: "/Auth/signup",
+  HOME: "/",
+};
+
+export const PrivateRoutes = {
+  DASHBOARD: "/dashboard",
+  PROFILE: "/profile",
+  SETTINGS: "/settings",
+};
