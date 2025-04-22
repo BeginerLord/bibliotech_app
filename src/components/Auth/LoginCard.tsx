@@ -80,7 +80,7 @@ export default function LoginCard() {
         >
           <p className="text-gray-600">
             ¿No tienes cuenta?{" "}
-            <Link href="/register" className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
+            <Link href="/Auth/signup" className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
               Regístrate
             </Link>
           </p>

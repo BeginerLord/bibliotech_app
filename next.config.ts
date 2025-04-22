@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "howtobecomealibrarian.com",
       },
+      {
+        protocol: "https",
+        hostname: "as2.ftcdn.net",
+      },
     ],
   },
 };

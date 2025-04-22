@@ -1,4 +1,5 @@
 import { bibliotechapi } from "@/api/api";
+import { UserModel } from "@/models/user_model";
 import { jwtDecode } from "jwt-decode";
 
 
@@ -48,3 +49,8 @@ export const getAuthorities = () => {
     return null;
   }
 };
+
+export const singup = async(user:UserModel)=>{
+  const {data} = await bibliotechapi.post("/auth/sign-up",user);
+  return data as UserModel;
+}

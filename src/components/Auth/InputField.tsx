@@ -11,9 +11,10 @@ interface InputFieldProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   placeholder?: string
   required?: boolean
+  name?: string
 }
 
-export default function InputField({ label, type, value, onChange, placeholder, required = false }: InputFieldProps) {
+export default function InputField({ label, type, value, onChange, placeholder, required = false,name, }: InputFieldProps) {
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium text-gray-700">{label}</label>
@@ -24,6 +25,7 @@ export default function InputField({ label, type, value, onChange, placeholder, 
           onChange={onChange}
           placeholder={placeholder}
           required={required}
+          name={name}
           className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 transition-all duration-200 outline-none"
         />
       </motion.div>
