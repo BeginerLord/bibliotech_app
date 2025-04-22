@@ -4,7 +4,13 @@ import type { NextRequest } from "next/server";
 
 
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get("accessToken")?.value;
+ const token = request.cookies.get("accessToken")?.value;
+  
+// Si el usuario accede a la raíz ("/"), redirigir a /Auth/login
+if (request.nextUrl.pathname === PublicRoutes.HOME) {
+  return NextResponse.redirect(new URL(PublicRoutes.LOGIN, request.url));
+}
+
 
   // Rutas privadas
   const privateRoutes = Object.values(PrivateRoutes);
@@ -27,5 +33,5 @@ export function middleware(request: NextRequest) {
 
 // Configurar las rutas donde se aplica el middleware
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/settings/:path*", "/Auth/:path*"],
+  matcher: ["/", "/dashboard/:path*", "/profile/:path*", "/settings/:path*", "/Auth/:path*"],
 };

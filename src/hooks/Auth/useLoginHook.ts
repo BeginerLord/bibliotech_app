@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 
 export const useLoginHook = () => {
   const { mutate: loginMutation, isPending } = useMutation({
+    mutationKey: ["login"],
     mutationFn: login,
 
     onSuccess: (data) => {
@@ -24,5 +25,5 @@ export const useLoginHook = () => {
     },
   });
 
-  return { loginMutation, isPending };
+  return { login:loginMutation, isPending };
 };

@@ -7,21 +7,21 @@ interface JwtPayload {
 }
 
 export const login = async ({
-  username,
+  email,
   password,
 }: {
-  username: string;
+  email: string;
   password: string;
 }) => {
   try {
     // Realizar la solicitud de inicio de sesión
-    const { data } = await bibliotechapi.post("/login", { username, password });
+    const { data } = await bibliotechapi.post("/auth/login", { email, password });
 
     // Guardar el token JWT en localStorage
-    localStorage.setItem("accessToken", data.jwt);
+    localStorage.setItem("accessToken", data.accessToken);
 
-    // Decodificar el token JWT para obtener las autoridades
-    const decodedToken = jwtDecode<JwtPayload>(data.jwt);
+    // Decodificar el token JWT para obtener las autoridades 
+    const decodedToken = jwtDecode<JwtPayload>(data.accessToken);
     const authorities = decodedToken.authorities;
 
     return { ...data, authorities };
