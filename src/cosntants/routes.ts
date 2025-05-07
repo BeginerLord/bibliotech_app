@@ -8,4 +8,5 @@ export const PrivateRoutes = {
   DASHBOARD: "/dashboard",
   PROFILE: "/profile",
   SETTINGS: "/settings",
+  CATEGORY: "/category",
 };
