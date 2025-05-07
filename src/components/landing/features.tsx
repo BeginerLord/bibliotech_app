@@ -1,5 +1,14 @@
-"use client"
-import { BookOpen, Users, CalendarClock, BarChart3, Search, Tag, Shield, Zap } from "lucide-react";
+"use client";
+import {
+  BookOpen,
+  Users,
+  CalendarClock,
+  BarChart3,
+  Search,
+  Tag,
+  Shield,
+  Zap,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Features() {
@@ -7,42 +16,50 @@ export default function Features() {
     {
       icon: <BookOpen className="h-10 w-10 text-emerald-600" />,
       title: "Book Management",
-      description: "Easily catalog and organize your entire collection with powerful search and filtering.",
+      description:
+        "Easily catalog and organize your entire collection with powerful search and filtering.",
     },
     {
       icon: <Users className="h-10 w-10 text-emerald-600" />,
       title: "User Management",
-      description: "Keep track of members, their borrowing history, and preferences with detailed profiles.",
+      description:
+        "Keep track of members, their borrowing history, and preferences with detailed profiles.",
     },
     {
       icon: <CalendarClock className="h-10 w-10 text-emerald-600" />,
       title: "Lending System",
-      description: "Streamline checkouts, returns, and reservations with automated reminders.",
+      description:
+        "Streamline checkouts, returns, and reservations with automated reminders.",
     },
     {
       icon: <BarChart3 className="h-10 w-10 text-emerald-600" />,
       title: "Analytics & Reports",
-      description: "Gain insights into your library's performance with comprehensive statistics and reports.",
+      description:
+        "Gain insights into your library's performance with comprehensive statistics and reports.",
     },
     {
       icon: <Search className="h-10 w-10 text-emerald-600" />,
       title: "Advanced Search",
-      description: "Find any book instantly with our powerful search engine that indexes all metadata.",
+      description:
+        "Find any book instantly with our powerful search engine that indexes all metadata.",
     },
     {
       icon: <Tag className="h-10 w-10 text-emerald-600" />,
       title: "Customizable Tags",
-      description: "Create your own classification system with custom tags and categories.",
+      description:
+        "Create your own classification system with custom tags and categories.",
     },
     {
       icon: <Shield className="h-10 w-10 text-emerald-600" />,
       title: "Secure Access",
-      description: "Control who can access what with role-based permissions and secure authentication.",
+      description:
+        "Control who can access what with role-based permissions and secure authentication.",
     },
     {
       icon: <Zap className="h-10 w-10 text-emerald-600" />,
       title: "Fast Performance",
-      description: "Enjoy lightning-fast performance even with large collections and multiple users.",
+      description:
+        "Enjoy lightning-fast performance even with large collections and multiple users.",
     },
   ];
 
@@ -69,9 +86,12 @@ export default function Features() {
     <section id="features" className="py-16 md:py-24 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Powerful Features for Modern Libraries</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+            Powerful Features for Modern Libraries
+          </h2>
           <p className="text-lg text-gray-600">
-            Everything you need to run your library efficiently in one elegant platform
+            Everything you need to run your library efficiently in one elegant
+            platform
           </p>
         </div>
 
@@ -88,7 +108,9 @@ export default function Features() {
               variants={itemVariants}
             >
               <div className="mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">{feature.title}</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                {feature.title}
+              </h3>
               <p className="text-gray-600">{feature.description}</p>
             </motion.div>
           ))}
