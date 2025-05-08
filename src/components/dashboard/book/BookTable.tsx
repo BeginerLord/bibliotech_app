@@ -1,44 +1,45 @@
-import { useState } from "react"
-import { useGetAllBooks } from "@/hooks/Book"
-import { Loader2, ChevronDown, ChevronUp, Search, Edit, Trash2, Eye } from "lucide-react"
+"use client";
+import { useState } from "react";
+import { useGetAllBooks } from "@/hooks/Book";
+import { Loader2, ChevronDown, ChevronUp, Search, Edit, Trash2, Eye } from "lucide-react";
 
 export default function BookTable() {
-  const [page, setPage] = useState(0)
-  const [size, setSize] = useState(10)
-  const [sortField, setSortField] = useState("title")
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusEntity, setStatusEntity] = useState("ACTIVE") // Estado del libro (activo o inactivo)
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [sortField, setSortField] = useState("title");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusEntity, setStatusEntity] = useState("ACTIVE"); // Estado del libro (activo o inactivo)
 
-  const { isLoading, data } = useGetAllBooks(page, size, sortField, sortDirection, statusEntity)
+  const { isLoading, data } = useGetAllBooks(page, size, sortField, sortDirection, statusEntity);
 
   const handleSort = (field: string) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSortField(field)
-      setSortDirection("asc")
+      setSortField(field);
+      setSortDirection("asc");
     }
-  }
+  };
 
   const filteredBooks = data?.content?.filter(
     (book) =>
       book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       book.authorFullnames.toLowerCase().includes(searchTerm.toLowerCase()) ||
       book.isbn.includes(searchTerm)
-  ) || []
+  ) || [];
 
   const handlePrevPage = () => {
     if (page > 0) {
-      setPage(page - 1)
+      setPage(page - 1);
     }
-  }
+  };
 
   const handleNextPage = () => {
     if (data && !data.last) {
-      setPage(page + 1)
+      setPage(page + 1);
     }
-  }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -88,11 +89,11 @@ export default function BookTable() {
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("author")}
+                  onClick={() => handleSort("authorFullnames")}
                 >
                   <div className="flex items-center">
                     Autor
-                    {sortField === "author" && (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
+                    {sortField === "authorFullnames" && (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
                   </div>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -101,14 +102,15 @@ export default function BookTable() {
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("year")}
+                  onClick={() => handleSort("quantityPage")}
                 >
-                  <div className="flex items-center">
-                    Año
-                    {sortField === "year" && (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
-                  </div>
+                  Páginas
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                  onClick={() => handleSort("nameCategoria")}
+                >
                   Categoría
                 </th>
                 <th
@@ -127,12 +129,13 @@ export default function BookTable() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredBooks.map((book) => (
-                <tr key={book.bookUuid} className="hover:bg-gray-50 transition-colors">
+                <tr key={book.isbn} data-bookuuid={book.bookUuid} data-uuidcategoria={book.uuidCategoria} data-authoruuids={book.authorUuids} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="font-medium text-gray-900">{book.title}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-700">{book.authorFullnames}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-700">{book.isbn}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-700">{book.quantityPage}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-gray-700">{book.nameCategoria}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {book.cantidadEjemplares} ejemplares
@@ -180,5 +183,5 @@ export default function BookTable() {
         </div>
       </div>
     </div>
-  )
+  );
 }

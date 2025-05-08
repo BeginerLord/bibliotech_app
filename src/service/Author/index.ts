@@ -3,12 +3,23 @@ import { AuthorModel, AuthorModelDto, UpdateAuthorModel } from "@/models/author_
 import { PaginatedResponse } from "@/models/PaginatedResponse";
 
 
-export const getAllAuthor = async (page: number = 0, size: number = 10, sortBy: string = "name", direction: string = "asc") => {
-    const url = `/author?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}`;
+export const getAllAuthor = async (
+    page: number = 0,
+    size: number = 10,
+    sortBy: string = "fullName",  // Usamos 'fullName' como predeterminado
+    direction: string = "asc",
+    statusEntity?: string // Hacemos que 'statusEntity' sea opcional
+  ) => {
+    // Construir la URL completa usando los parámetros
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/author?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}${statusEntity ? `&statusEntity=${statusEntity}` : ''}`;
+  
+    // Realizar la solicitud GET usando la instancia de Axios
     const { data } = await bibliotechapi.get(url);
-
+  
     return data as PaginatedResponse<AuthorModel>;
-}
+  }
+  
+
 
 export const saveAuthor = async (category: UpdateAuthorModel) => {
     const { data } = await bibliotechapi.post("/author", category);

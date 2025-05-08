@@ -1,5 +1,5 @@
 import { FileText, Plus, Filter } from "lucide-react"
-import AuthorTable from "@/components/dashboard/AuthorTable"
+import AuthorTable from "@/components/dashboard/author/AuthorTable"
 
 export default function AutoresPage() {
   return (

@@ -1,3 +1,4 @@
+"use client"
 import { useState } from "react"
 import { Edit, Trash2, Eye, ChevronDown, ChevronUp, Search, BookOpen, Loader2 } from "lucide-react"
 import { useDeleteCategoryByUuid, useGetAllCategory } from "@/hooks/Category"
