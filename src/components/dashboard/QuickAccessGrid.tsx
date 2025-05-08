@@ -51,7 +51,7 @@ const quickAccessItems = [
     title: "Catálogo",
     description: "Ver catálogo completo",
     icon: BookOpen,
-    href: "/dashboard/catalogo",
+    href: "/dashboard/categoria",
     color: "bg-teal-500",
   },
   {
