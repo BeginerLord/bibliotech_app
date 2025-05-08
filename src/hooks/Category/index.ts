@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 // Hook para crear una categoría
 export const useCreateCategory = () => {
     const queryClient = useQueryClient();
-    const { mutate: createCategoryMutation, isLoading: isCreating } = useMutation({
+    const { mutate: createCategoryMutation, isPending: isCreating } = useMutation({
         mutationFn: saveCategory,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["category"] });
@@ -34,7 +34,7 @@ export const useGetAllCategory = (page: number = 0, size: number = 10, sortBy: s
 // Hook para actualizar una categoría por UUID
 export const useUpdateCategory = () => {
     const queryClient = useQueryClient();
-    const { mutate: updateCategoryMutate, isLoading: isUpdating } = useMutation({
+    const { mutate: updateCategoryMutate, isPending: isUpdating } = useMutation({
         mutationFn: ({ uuid, category }: { uuid: string, category: CategoryModel }) => updateCategoryByUuid(uuid, category),
         onSuccess: (updatedCategory) => {
             queryClient.invalidateQueries({ queryKey: ["category", updatedCategory.uuid] });
@@ -84,7 +84,7 @@ export const useFindCategoryByDescription = (description: string) => {
 // Hook para eliminar una categoría por UUID
 export const useDeleteCategoryByUuid = () => {
     const queryClient = useQueryClient();
-    const { mutate: deleteCategoryMutate, isLoading: isDeleting } = useMutation({
+    const { mutate: deleteCategoryMutate, isPending: isDeleting } = useMutation({
         mutationFn: deleteCategoryByUuid,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["category"] });
