@@ -1,113 +1,131 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookModel, BookModelDto, CreateBookModel, UpdateBookModel } from "@/models/book_model";
 import { PaginatedResponse } from "@/models/PaginatedResponse";
-import { createBook, deleteBookByUuid, getAllBooks, getBookByUuid, searchBooksByTitle, updateBookByUuid } from "@/service/Books";
-import { PersonModelDto, UpdatePersonModel } from "@/models/persons_model";
-import { createPerson, getAllPersonsActive, searchyUserByDni, updatePersonByDni, updateStatusActiveByEmail, updateStatusInactiveByEmail } from "@/service/Persons";
+import { UserModelDto, UpdateUserModel, UserModel } from "@/models/persons_model";
+import {
+  createUser,
+  getAllUsersActive,
+  getAllUsersInactive,
+  searchUserByDni,
+  searchUserByEmail,
+  updateUserByDni,
+  updateStatusActiveByEmail,
+  updateStatusInactiveByEmail
+} from "@/service/Persons"; 
 
-export const useGetAllPersonsActives = (
+export const useGetAllUsersActive = (
   page: number = 0,
   size: number = 10,
   sortBy: string = "email",
   direction: string = "asc",
   statusEntity: string = "ACTIVE"
 ) => {
-  const { isLoading, data, error } = useQuery<PaginatedResponse<PersonModelDto>>({
-    queryKey: ["persons", page, size, sortBy, direction, statusEntity],
-    queryFn: () => getAllPersonsActive(page, size, sortBy, direction, statusEntity),
-    staleTime: 5 * 60 * 1000, // Los datos son válidos durante 5 minutos
-    refetchOnWindowFocus: false, // No recargar los datos cuando el usuario regresa a la ventana
+  const { isLoading, data, error } = useQuery<PaginatedResponse<UserModelDto>>({
+    queryKey: ["users", page, size, sortBy, direction, statusEntity],
+    queryFn: () => getAllUsersActive(page, size, sortBy, direction, statusEntity),
+    staleTime: 5 * 60 * 1000, // Data is valid for 5 minutes
+    refetchOnWindowFocus: false, // Don't reload data when user returns to window
   });
 
   return { isLoading, data, error };
 };
 
-export const useCreatePerson = () => {
+export const useGetAllUsersInactive = (
+  page: number = 0,
+  size: number = 10,
+  sortBy: string = "email",
+  direction: string = "asc",
+  statusEntity: string = "ARCHIVED"
+) => {
+  const { isLoading, data, error } = useQuery<PaginatedResponse<UserModelDto>>({
+    queryKey: ["users", page, size, sortBy, direction, statusEntity],
+    queryFn: () => getAllUsersInactive(page, size, sortBy, direction, statusEntity),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  return { isLoading, data, error };
+};
+
+export const useCreateUser = () => {
   const queryClient = useQueryClient();
-  const { mutate: createPersonMutation, isPending: isCreating, error: createError } = useMutation({
-    mutationFn: (personData: PersonModelDto) => createPerson(personData),
+  const { mutate: createUserMutation, isPending: isCreating, error: createError } = useMutation({
+    mutationFn: (userData: UserModel) => createUser(userData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["persons"] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error) => {
-      console.error("Error creating persons:", error);
+      console.error("Error creating user:", error);
     },
   });
 
-  return { createPersonMutation, isCreating, createError };
+  return { createUserMutation, isCreating, createError };
 };
 
-
-export const useUpdateStatusPersonInactive =()=>{
-
-  const queryClient= useQueryClient();
-  const {mutate: updateStatusPersonInactiveMutation, isPending:isStatusInactive}=useMutation({
-    mutationFn:({email} :{email:string})=>updateStatusInactiveByEmail(email),
-    onSuccess:()=>{
-      queryClient.invalidateQueries({queryKey:["persons"]});
-
-    },
-    onError: (error) => {
-      console.error("Error updating persons:", error);
-    },
-  })
-  return {updateStatusPersonInactiveMutation, isStatusInactive}
-}
-
-export const useUpdateStatusPersonActive =()=>{
-
-  const queryClient= useQueryClient();
-  const {mutate: updateStatusPersonActiveMutation, isPending:isStatusActive}=useMutation({
-    mutationFn:({email} :{email:string})=>updateStatusActiveByEmail(email),
-    onSuccess:()=>{
-      queryClient.invalidateQueries({queryKey:["persons"]});
-
-    },
-    onError: (error) => {
-      console.error("Error updating persons:", error);
-    },
-  })
-  return {updateStatusPersonActiveMutation, isStatusActive}
-}
-export const useUpdatePerson = () => {
+export const useUpdateStatusUserInactive = () => {
   const queryClient = useQueryClient();
-  const { mutate: updatePersonMutation, isPending: isUpdating, error: updateError } = useMutation({
-    mutationFn: ({ dni, personData }: { dni: string, personData: UpdatePersonModel }) => 
-      updatePersonByDni(dni, personData),
-    onSuccess: (updatedBook) => {
-      queryClient.invalidateQueries({ queryKey: ["persons", updatedBook.dni] });
-      queryClient.invalidateQueries({ queryKey: ["persons"] });
+  const { mutate: updateStatusUserInactiveMutation, isPending: isStatusInactive } = useMutation({
+    mutationFn: ({ email }: { email: string }) => updateStatusInactiveByEmail(email),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error) => {
-      console.error("Error updating persons:", error);
+      console.error("Error updating user status:", error);
+    },
+  });
+  
+  return { updateStatusUserInactiveMutation, isStatusInactive };
+};
+
+export const useUpdateStatusUserActive = () => {
+  const queryClient = useQueryClient();
+  const { mutate: updateStatusUserActiveMutation, isPending: isStatusActive } = useMutation({
+    mutationFn: ({ email }: { email: string }) => updateStatusActiveByEmail(email),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error) => {
+      console.error("Error updating user status:", error);
+    },
+  });
+  
+  return { updateStatusUserActiveMutation, isStatusActive };
+};
+
+export const useUpdateUser = () => {
+  const queryClient = useQueryClient();
+  const { mutate: updateUserMutation, isPending: isUpdating, error: updateError } = useMutation({
+    mutationFn: ({ dni, userData }: { dni: string, userData: UpdateUserModel }) => 
+      updateUserByDni(dni, userData),
+    onSuccess: (updatedUser) => {
+      queryClient.invalidateQueries({ queryKey: ["users", updatedUser.dni] });
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+    onError: (error) => {
+      console.error("Error updating user:", error);
     },
   });
 
-  return { updatePersonMutation, isUpdating, updateError };
+  return { updateUserMutation, isUpdating, updateError };
 };
 
- 
-export const useGetPersonByEmail = (email: string) => {
-  const { data, isLoading, error } = useQuery<PersonModelDto>({
-    queryKey: ["persons", email],
-    queryFn: () => searchyUserByDni(email),
+export const useGetUserByEmail = (email: string) => {
+  const { data, isLoading, error } = useQuery<UserModelDto>({
+    queryKey: ["users", email],
+    queryFn: () => searchUserByEmail(email),
     staleTime: 5 * 60 * 1000,
-    enabled: !!email, // Don't make the request if no UUID is provided
+    enabled: !!email, // Don't make the request if no email is provided
   });
 
   return { data, isLoading, error };
 };
 
-
-export const useGetPersonByDni = (dni: string) => {
-  const { data, isLoading, error } = useQuery<PersonModelDto>({
-    queryKey: ["persons", dni],
-    queryFn: () => searchyUserByDni(dni),
+export const useGetUserByDni = (dni: string) => {
+  const { data, isLoading, error } = useQuery<UserModelDto>({
+    queryKey: ["users", dni],
+    queryFn: () => searchUserByDni(dni),
     staleTime: 5 * 60 * 1000,
-    enabled: !!dni, // Don't make the request if no UUID is provided
+    enabled: !!dni, // Don't make the request if no DNI is provided
   });
 
   return { data, isLoading, error };
 };
-
- 
