@@ -7,35 +7,30 @@ export interface BookModel {
   descriptionCategoria: string;
   uuidCategoria: string;
   cantidadEjemplares: number;
-  authorUuids: string;
-  authorFullnames: string;
-  statusEntity?: "ACTIVE" | "INACTIVE";
-  publicationDate?: string;
+  authorUuids: string;      // cadena con UUIDs separados por ','
+  authorFullnames: string;  // cadena con nombres separados por ', '
+  statusEntity: string;     // viene como string (p.ej. "ACTIVE"|"INACTIVE")
+  publicationDate?: string; // formato "YYYY-MM-DD"
 }
 
-export interface BookModelDto extends Omit<BookModel, 'bookUuid'> {
-  // All fields except bookUuid for creation
+export interface CreateBookModel {
+  title: string;
+  publicationDate: string;   // formato "YYYY-MM-DD"
+  quantityPage: number;
+  isbn: string;
+  categoryUuid: string;
+  cantidadDeCopies: number;
+  authorsUuids: string[];    // array de UUIDs
 }
 
 export interface UpdateBookModel {
-  uuid?: string;
-  title?: string;
-  publicationDate?: string;
-  quantityPage?: number;
-  isbn?: string;
-  categoryUuid?: string;
-  cantidadDeCopies?: number;
-  authorsUuids?: string[];
-  statusEntity?: "ACTIVE" | "INACTIVE";
-}
-
-// Para crear un nuevo libro según el swagger
-export interface CreateBookModel {
+  uuid: string;               // UUID del libro a actualizar (cambiado de bookUuid a uuid)
   title: string;
-  publicationDate: string;
+  publicationDate: string;    // "YYYY-MM-DD"
   quantityPage: number;
   isbn: string;
   categoryUuid: string;
   cantidadDeCopies: number;
   authorsUuids: string[];
+  statusEntity: string;       // "ACTIVE" | "INACTIVE"
 }
