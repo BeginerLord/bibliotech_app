@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Loader2, X } from "lucide-react"
 import { CreateBookModel } from "@/models/book_model"
+import { useGetAllAuthors } from "@/hooks/Author" // Importamos el hook
 
 type SaveBookModalProps = {
   isOpen: boolean
@@ -49,6 +50,25 @@ export default function SaveBookModal({
     authorsUuids: false,
   })
 
+  // Obtener la lista de autores
+  const { data: authorsData } = useGetAllAuthors(0, 100, "fullName", "asc", "ACTIVE");
+  const authors = authorsData?.content || [];
+
+  // Estado para manejar múltiples selecciones de autor
+  const [selectedAuthors, setSelectedAuthors] = useState<string[]>([]);
+
+  // Actualizar authorsUuids cuando cambia la selección
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      authorsUuids: selectedAuthors
+    }));
+    
+    if (formErrors.authorsUuids && selectedAuthors.length > 0) {
+      setFormErrors(prev => ({ ...prev, authorsUuids: false }))
+    }
+  }, [selectedAuthors]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -69,16 +89,18 @@ export default function SaveBookModal({
     }
   }
 
-  const handleAuthorsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const arr = e.target.value
-      .split(",")
-      .map(s => s.trim())
-      .filter(s => s)
-    setFormData(prev => ({ ...prev, authorsUuids: arr }))
-    if (formErrors.authorsUuids) {
-      setFormErrors(prev => ({ ...prev, authorsUuids: false }))
+  // Manejar cambios en la selección de autores
+  const handleAuthorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const authorUuid = e.target.value;
+    if (authorUuid && !selectedAuthors.includes(authorUuid)) {
+      setSelectedAuthors([...selectedAuthors, authorUuid]);
     }
-  }
+  };
+
+  // Eliminar un autor de la selección
+  const removeAuthor = (uuid: string) => {
+    setSelectedAuthors(selectedAuthors.filter(id => id !== uuid));
+  };
 
   const validateForm = () => {
     const errors: FormErrors = {
@@ -114,6 +136,7 @@ export default function SaveBookModal({
       cantidadDeCopies: 1,
       authorsUuids: [],
     })
+    setSelectedAuthors([]);
     setFormErrors({
       title: false,
       publicationDate: false,
@@ -131,6 +154,12 @@ export default function SaveBookModal({
   }
 
   if (!isOpen) return null
+
+  // Función para obtener nombre del autor por UUID
+  const getAuthorNameByUuid = (uuid: string) => {
+    const author = authors.find(a => a.uuid === uuid); // Assuming the correct property is 'uuid'
+    return author ? author.fullName : uuid;
+  };
 
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
@@ -165,25 +194,50 @@ export default function SaveBookModal({
               )}
             </div>
 
-            {/* Authors (UUIDs) */}
+            {/* Authors Selection */}
             <div>
-              <label htmlFor="authorsUuids" className="block text-sm font-medium text-gray-700 mb-1">
-                Autores (UUIDs) <span className="text-rose-500">*</span>
+              <label htmlFor="authorsSelect" className="block text-sm font-medium text-gray-700 mb-1">
+                Autores <span className="text-rose-500">*</span>
               </label>
-              <input
-                id="authorsUuids"
-                name="authorsUuids"
-                value={formData.authorsUuids.join(",")}
-                onChange={handleAuthorsChange}
+              <select
+                id="authorsSelect"
+                name="authorsSelect"
+                onChange={handleAuthorChange}
+                value=""
                 className={`w-full px-3 py-2 border ${
                   formErrors.authorsUuids ? "border-rose-500" : "border-gray-300"
                 } rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500`}
-              />
+              >
+                <option value="">Seleccionar autor</option>
+                {authors.map(author => (
+                  <option key={author.uuid} value={author.uuid}>
+                    {author.fullName}
+                  </option>
+                ))}
+              </select>
+              
+              {/* Display selected authors as tags */}
+              <div className="mt-2 flex flex-wrap gap-2">
+                {selectedAuthors.map(uuid => (
+                  <div key={uuid} className="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-medium flex items-center">
+                    {getAuthorNameByUuid(uuid)}
+                    <button 
+                      type="button"
+                      onClick={() => removeAuthor(uuid)}
+                      className="ml-1.5 text-emerald-700 hover:text-emerald-900 focus:outline-none"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
               {formErrors.authorsUuids && (
-                <p className="mt-1 text-sm text-rose-500">Debes indicar al menos un autor</p>
+                <p className="mt-1 text-sm text-rose-500">Debes seleccionar al menos un autor</p>
               )}
             </div>
 
+            {/* Resto del formulario se mantiene igual */}
             {/* ISBN */}
             <div>
               <label htmlFor="isbn" className="block text-sm font-medium text-gray-700 mb-1">
