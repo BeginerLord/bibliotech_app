@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import { Loader2, X } from "lucide-react"
 import { CategoryModel } from "@/models/category_model"
@@ -19,7 +21,6 @@ export default function SaveCategoryModal({
     name: "",
     description: ""
   })
-  
   const [formErrors, setFormErrors] = useState({
     name: false,
     description: false
@@ -27,33 +28,23 @@ export default function SaveCategoryModal({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value,
-    })
-    
-    // Clear error when user types
-    if (formErrors[name as 'name' | 'description']) {
-      setFormErrors({
-        ...formErrors,
-        [name]: false
-      })
+    setFormData(prev => ({ ...prev, [name]: value }))
+    if (formErrors[name as "name" | "description"]) {
+      setFormErrors(prev => ({ ...prev, [name]: false }))
     }
   }
-  
-  const validateForm = (): boolean => {
+
+  const validateForm = () => {
     const errors = {
-      name: !formData.name || formData.name.trim() === "",
-      description: !formData.description || formData.description.trim() === ""
+      name: !formData.name?.trim(),
+      description: !formData.description?.trim()
     }
-    
     setFormErrors(errors)
     return !errors.name && !errors.description
   }
 
   const handleSubmit = async () => {
     if (!validateForm()) return
-    
     try {
       await onSave(formData as CategoryModel)
       resetForm()
@@ -61,18 +52,12 @@ export default function SaveCategoryModal({
       console.error("Error al crear la categoría:", error)
     }
   }
-  
+
   const resetForm = () => {
-    setFormData({
-      name: "",
-      description: ""
-    })
-    setFormErrors({
-      name: false,
-      description: false
-    })
+    setFormData({ name: "", description: "" })
+    setFormErrors({ name: false, description: false })
   }
-  
+
   const handleClose = () => {
     resetForm()
     onClose()
@@ -81,8 +66,8 @@ export default function SaveCategoryModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-4">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 border border-gray-200">
         <div className="flex justify-between items-center border-b border-gray-200 px-6 py-4">
           <h3 className="text-lg font-semibold text-gray-900">Nueva Categoría</h3>
           <button
@@ -105,7 +90,7 @@ export default function SaveCategoryModal({
                 value={formData.name || ""}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 border ${
-                  formErrors.name ? 'border-rose-500' : 'border-gray-300'
+                  formErrors.name ? "border-rose-500" : "border-gray-300"
                 } rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500`}
               />
               {formErrors.name && (
@@ -122,11 +107,11 @@ export default function SaveCategoryModal({
               <textarea
                 id="description"
                 name="description"
+                rows={4}
                 value={formData.description || ""}
                 onChange={handleChange}
-                rows={4}
                 className={`w-full px-3 py-2 border ${
-                  formErrors.description ? 'border-rose-500' : 'border-gray-300'
+                  formErrors.description ? "border-rose-500" : "border-gray-300"
                 } rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500`}
               />
               {formErrors.description && (

@@ -1,3 +1,5 @@
+"use client"
+
 import { Loader2 } from "lucide-react"
 import { CategoryModel } from "@/models/category_model"
 
@@ -19,8 +21,8 @@ export default function DeleteCategoryModal({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-4">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md mx-4 border border-gray-200">
         <div className="px-6 py-4">
           <h3 className="text-lg font-semibold text-gray-900 mb-2">¿Estás seguro?</h3>
           <p className="text-gray-500">
