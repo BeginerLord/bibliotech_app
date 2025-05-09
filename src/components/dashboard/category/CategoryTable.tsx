@@ -1,76 +1,147 @@
 "use client"
+
 import { useState } from "react"
-import { Edit, Trash2, Eye, ChevronDown, ChevronUp, Search, BookOpen, Loader2 } from "lucide-react"
-import { useDeleteCategoryByUuid, useGetAllCategory } from "@/hooks/Category"
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react"
+import { useCreateCategory, useDeleteCategoryByUuid, useGetAllCategory, useUpdateCategory } from "@/hooks/Category"
+import { CategoryModel } from "@/models/category_model"
+
+import CategoryTableHeader from "./CategoryTableHeader"
+import CategoryTableRow from "./CategoryTableRow"
+import EditCategoryModal from "./EditCategoryModal"
+import DeleteCategoryModal from "./DeleteCategoryModal"
+import CategoryTablePagination from "./CategoryTablePagination"
+import SaveCategoryModal from "./SaveCategoryModal"
 
 export default function CategoryTable() {
-    const [page, setPage] = useState(0)
-    const [size, setSize] = useState(10)
-    const [sortField, setSortField] = useState("name")
-    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
-    const [searchTerm, setSearchTerm] = useState("")
+  const [page, setPage] = useState(0)
+  const [size, setSize] = useState(10)
+  const [sortField, setSortField] = useState("name")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
+  const [searchTerm, setSearchTerm] = useState("")
+
+  // Estado para el modal de creación
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+
+  // Estado para el modal de edición
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [currentCategory, setCurrentCategory] = useState<CategoryModel | null>(null)
+  const [editFormData, setEditFormData] = useState<Partial<CategoryModel>>({})
+  
+  // Estado para el modal de confirmación de eliminación
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState<CategoryModel | null>(null)
+  
+  const { isLoading, data } = useGetAllCategory(page, size, sortField, sortDirection)
+  const { deleteCategoryMutate, isDeleting } = useDeleteCategoryByUuid()
+  const { updateCategoryMutate, isUpdating } = useUpdateCategory()
+  const { createCategoryMutation, isCreating } = useCreateCategory()
+  
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortDirection("asc")
+    }
+  }
+
+  // Función para abrir el modal de nueva categoría
+  const handleOpenCreateModal = () => {
+    setIsCreateModalOpen(true)
+  }
+
+    // Función para crear una nueva categoría
+  const handleCreateCategory = async (category: CategoryModel) => {
+    try {
+      await createCategoryMutation(category)
+      setIsCreateModalOpen(false)
+      alert("Categoría creada correctamente")
+    } catch (error) {
+      console.error("Error al crear la categoría:", error)
+      alert("Error al crear la categoría")
+    }
+  }
+
+  // Abrir modal de edición
+  const handleEdit = (category: CategoryModel) => {
+    setCurrentCategory(category)
+    setEditFormData({ ...category })
+    setIsEditModalOpen(true)
+  }
+  
+  // Manejar cambios en el formulario de edición
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setEditFormData({
+      ...editFormData,
+      [name]: value,
+    })
+  }
+  
+  // Guardar cambios de edición
+  const handleSaveEdit = async () => {
+    if (!currentCategory || !editFormData || !editFormData.name || !editFormData.description) return
     
-    const { isLoading, data } = useGetAllCategory(page, size, sortField, sortDirection)
-    const { deleteCategoryMutate, isDeleting } = useDeleteCategoryByUuid()
+    try {
+      await updateCategoryMutate({ 
+        uuid: currentCategory.uuid, 
+        category: editFormData as CategoryModel 
+      })
+      setIsEditModalOpen(false)
+      alert("Categoría actualizada correctamente")
+    } catch (error) {
+      alert("Error al actualizar la categoría")
+      console.error("Error al actualizar la categoría:", error)
+    }
+  }
+  
+  // Abrir modal de confirmación de eliminación
+  const handleDeleteClick = (category: CategoryModel) => {
+    setCategoryToDelete(category)
+    setIsDeleteModalOpen(true)
+  }
+
+  // Confirmar eliminación
+  const handleConfirmDelete = async () => {
+    if (!categoryToDelete) return
     
-  
-    const handleSort = (field: string) => {
-      if (sortField === field) {
-        setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-      } else {
-        setSortField(field)
-        setSortDirection("asc")
-      }
+    try {
+      await deleteCategoryMutate(categoryToDelete.uuid)
+      setIsDeleteModalOpen(false)
+      alert("La categoría se ha eliminado correctamente")
+    } catch (error) {
+      alert("Error: No se pudo eliminar la categoría")
+      console.error("Error al eliminar categoría:", error)
     }
-  
-    const handleDelete = async (uuid: string) => {
-        if (confirm("¿Está seguro que desea eliminar esta categoría?")) {
-          try {
-            await deleteCategoryMutate(uuid)
-            alert("La categoría se ha eliminado correctamente") // Usando alert nativo en lugar de toast
-          } catch (error) {
-            alert("Error: No se pudo eliminar la categoría") // Usando alert nativo para mostrar errores
-            console.error("Error al eliminar categoría:", error)
-          }
-        }
-      }
-  
-    // Filtra las categorías según el término de búsqueda
-    const filteredCategories = data?.content?.filter(
-      (category) =>
-        category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        category.description.toLowerCase().includes(searchTerm.toLowerCase())
-    ) || []
-  
-    const handlePrevPage = () => {
-      if (page > 0) {
-        setPage(page - 1)
-      }
+  }
+
+  // Filtra las categorías según el término de búsqueda
+  const filteredCategories = data?.content?.filter(
+    (category) =>
+      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      category.description.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || []
+
+  const handlePrevPage = () => {
+    if (page > 0) {
+      setPage(page - 1)
     }
-  
-    const handleNextPage = () => {
-      if (data && !data.last) {
-        setPage(page + 1)
-      }
+  }
+
+  const handleNextPage = () => {
+    if (data && !data.last) {
+      setPage(page + 1)
     }
-  
-    return (
+  }
+  return (
+    <>
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-5 border-b border-gray-200">
-          <div className="flex items-center">
-            <div className="relative flex-grow">
-              <input
-                type="text"
-                placeholder="Buscar por nombre o descripción..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 transition-all duration-200 outline-none"
-              />
-              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            </div>
-          </div>
-        </div>
-  
+        <CategoryTableHeader 
+          searchTerm={searchTerm}
+          onSearchChange={(e) => setSearchTerm(e.target.value)}
+           onCreateClick={handleOpenCreateModal}
+        />
+
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="flex justify-center items-center p-8">
@@ -114,33 +185,14 @@ export default function CategoryTable() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredCategories.length > 0 ? (
                   filteredCategories.map((category) => (
-                    <tr key={category.uuid} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-medium text-gray-900">{category.name}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-700">{category.description}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end space-x-2">
-                          <button className="p-1 rounded-full hover:bg-gray-100" title="Ver detalles">
-                            <Eye size={18} className="text-gray-500" />
-                          </button>
-                          <button className="p-1 rounded-full hover:bg-gray-100" title="Editar">
-                            <Edit size={18} className="text-blue-500" />
-                          </button>
-                          <button 
-                            className="p-1 rounded-full hover:bg-gray-100" 
-                            title="Eliminar" 
-                            onClick={() => handleDelete(category.uuid)}
-                            disabled={isDeleting}
-                          >
-                            {isDeleting ? 
-                              <Loader2 size={18} className="text-rose-500 animate-spin" /> : 
-                              <Trash2 size={18} className="text-rose-500" />
-                            }
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                    <CategoryTableRow
+                      key={category.uuid}
+                      category={category}
+                      onEdit={handleEdit}
+                      onDelete={handleDeleteClick}
+                      isUpdating={isUpdating}
+                      isDeleting={isDeleting}
+                    />
                   ))
                 ) : (
                   <tr>
@@ -153,33 +205,42 @@ export default function CategoryTable() {
             </table>
           )}
         </div>
-  
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <div className="text-sm text-gray-700">
-            Mostrando <span className="font-medium">{filteredCategories.length}</span> de{" "}
-            <span className="font-medium">{data?.totalElements || 0}</span> categorías
-          </div>
-          <div className="flex space-x-2">
-            <button 
-              className={`px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium ${
-                page > 0 ? "text-gray-700 hover:bg-gray-50" : "text-gray-400 cursor-not-allowed"
-              }`}
-              onClick={handlePrevPage}
-              disabled={page === 0}
-            >
-              Anterior
-            </button>
-            <button 
-              className={`px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium ${
-                data && !data.last ? "text-gray-700 hover:bg-gray-50" : "text-gray-400 cursor-not-allowed"
-              }`}
-              onClick={handleNextPage}
-              disabled={!data || data.last}
-            >
-              Siguiente
-            </button>
-          </div>
-        </div>
+
+        <CategoryTablePagination
+          page={page}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+          filteredCount={filteredCategories.length}
+          totalElements={data?.totalElements || 0}
+          isLastPage={!data || data.last}
+        />
       </div>
-    )
-  }
+
+      {/* Modals */}
+       <SaveCategoryModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSave={handleCreateCategory}
+        isCreating={isCreating}
+      />
+
+      <EditCategoryModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleSaveEdit}
+        category={currentCategory}
+        formData={editFormData}
+        onChange={handleEditFormChange}
+        isUpdating={isUpdating}
+      />
+
+      <DeleteCategoryModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        category={categoryToDelete}
+        isDeleting={isDeleting}
+      />
+    </>
+  )
+}
