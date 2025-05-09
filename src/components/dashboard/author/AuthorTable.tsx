@@ -1,16 +1,41 @@
 "use client"
 
 import { useState } from "react"
-import { Edit, Trash2, Eye, ChevronDown, ChevronUp, Search } from "lucide-react"
-import { useGetAllAuthors } from "@/hooks/Author"
-import { AuthorModel } from "@/models/author_model"
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react"
+import { useCreateAuthor, useGetAllAuthors, useUpdateAuthors, useDeleAuthorByUuid } from "@/hooks/Author"
+import { AuthorModel, CreateAuthorDto, UpdateAuthorModel } from "@/models/author_model"
+
+import AuthorTableHeader from "./AuthorTableHeader"
+import AuthorTableRow from "./AuthorTableRow"
+import AuthorTablePagination from "./AuthorTablePagination"
+import SaveAuthorModal from "./SaveAuthorModal"
+import EditAuthorModal from "./EditAuthorModal"
+import DeleteAuthorModal from "./DeleteAuthorModal"
 
 export default function AuthorTable() {
-  const [sortField, setSortField] = useState("")
-  const { isLoading, data, error } = useGetAllAuthors(0, 10, "fullName", "asc", "ACTIVE");
-  const [sortDirection, setSortDirection] = useState("asc")
+  const [page, setPage] = useState(0)
+  const [size, setSize] = useState(10)
+  const [sortField, setSortField] = useState("fullName")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
+  const [statusEntity, setStatusEntity] = useState<"ACTIVE" | "INACTIVE">("ACTIVE")
+
+  // Estado para el modal de creación
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+
+  // Estado para el modal de edición
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [currentAuthor, setCurrentAuthor] = useState<AuthorModel | null>(null)
+  const [editFormData, setEditFormData] = useState<UpdateAuthorModel>({})
+
+  // Estado para el modal de confirmación de eliminación
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [authorToDelete, setAuthorToDelete] = useState<AuthorModel | null>(null)
+
+  const { isLoading, data } = useGetAllAuthors(page, size, sortField, sortDirection, statusEntity)
+  const { useDeleAuthorMutation, isPending: isDeleting } = useDeleAuthorByUuid()
+  const { updateAuthorMutate, isPending: isUpdating } = useUpdateAuthors()
+  const { createAuthorMutation, isPending: isCreating } = useCreateAuthor()
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -21,145 +46,214 @@ export default function AuthorTable() {
     }
   }
 
-  // Ensure that data.content is always an array, even if data is undefined
-  const filteredAuthors = (data?.content ?? [])
-    .filter(
-      (author) =>
-        author.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        author.nationality.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (!sortField) return 0
+  // Función para abrir el modal de nuevo autor
+  const handleOpenCreateModal = () => {
+    setIsCreateModalOpen(true)
+  }
 
-      const fieldA = a[sortField as keyof AuthorModel]
-      const fieldB = b[sortField as keyof AuthorModel]
+  // Función para crear un nuevo autor
+  const handleCreateAuthor = async (author: CreateAuthorDto) => {
+    try {
+      await createAuthorMutation(author)
+      setIsCreateModalOpen(false)
+      alert("Autor creado correctamente")
+    } catch (error) {
+      console.error("Error al crear el autor:", error)
+      alert("Error al crear el autor")
+    }
+  }
 
-      if (fieldA === null) return 1
-      if (fieldB === null) return -1
+  // Abrir modal de edición
+  const handleEdit = (author: AuthorModel) => {
+    setCurrentAuthor(author)
+    setEditFormData({ ...author })
+    setIsEditModalOpen(true)
+  }
 
-      if (fieldA < fieldB) return sortDirection === "asc" ? -1 : 1
-      if (fieldA > fieldB) return sortDirection === "asc" ? 1 : -1
-      return 0
+  // Manejar cambios en el formulario de edición
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setEditFormData({
+      ...editFormData,
+      [name]: value,
     })
+  }
 
-  const handlePageChange = (direction: "prev" | "next") => {
-    if (direction === "prev" && currentPage > 1) {
-      setCurrentPage(currentPage - 1)
-    } else if (direction === "next") {
-      setCurrentPage(currentPage + 1)
+  // Guardar cambios de edición
+  const handleSaveEdit = async () => {
+    if (!currentAuthor || !editFormData) return
+
+    try {
+      await updateAuthorMutate({
+        uuid: currentAuthor.uuid,
+        author: editFormData as AuthorModel
+      })
+      setIsEditModalOpen(false)
+      alert("Autor actualizado correctamente")
+    } catch (error) {
+      alert("Error al actualizar el autor")
+      console.error("Error al actualizar el autor:", error)
+    }
+  }
+
+  // Abrir modal de confirmación de eliminación
+  const handleDeleteClick = (author: AuthorModel) => {
+    setAuthorToDelete(author)
+    setIsDeleteModalOpen(true)
+  }
+
+  // Confirmar eliminación
+  const handleConfirmDelete = async () => {
+    if (!authorToDelete) return
+
+    try {
+      await useDeleAuthorMutation(authorToDelete.uuid)
+      setIsDeleteModalOpen(false)
+      alert("El autor se ha eliminado correctamente")
+    } catch (error) {
+      alert("Error: No se pudo eliminar el autor")
+      console.error("Error al eliminar autor:", error)
+    }
+  }
+
+  // Filtra los autores según el término de búsqueda
+  const filteredAuthors = data?.content?.filter(
+    (author) =>
+      author.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      author.nationality.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || []
+
+  const handlePrevPage = () => {
+    if (page > 0) {
+      setPage(page - 1)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (data && !data.last) {
+      setPage(page + 1)
     }
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      <div className="p-5 border-b border-gray-200">
-        <div className="flex items-center">
-          <div className="relative flex-grow">
-            <input
-              type="text"
-              placeholder="Buscar por nombre o nacionalidad..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 transition-all duration-200 outline-none"
-            />
-            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          </div>
+    <>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <AuthorTableHeader
+          searchTerm={searchTerm}
+          onSearchChange={(e) => setSearchTerm(e.target.value)}
+          onCreateClick={handleOpenCreateModal}
+        />
+
+        <div className="overflow-x-auto">
+          {isLoading ? (
+            <div className="flex justify-center items-center p-8">
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+              <span className="ml-2 text-gray-600">Cargando autores...</span>
+            </div>
+          ) : (
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("fullName")}
+                  >
+                    <div className="flex items-center">
+                      Nombre
+                      {sortField === "fullName" &&
+                        (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
+                    </div>
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("nationality")}
+                  >
+                    <div className="flex items-center">
+                      Nacionalidad
+                      {sortField === "nationality" &&
+                        (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
+                    </div>
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                    onClick={() => handleSort("birthDate")}
+                  >
+                    <div className="flex items-center">
+                      Fecha de Nacimiento
+                      {sortField === "birthDate" &&
+                        (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
+                    </div>
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredAuthors.length > 0 ? (
+                  filteredAuthors.map((author) => (
+                    <AuthorTableRow
+                      key={author.uuid}
+                      author={author}
+                      onEdit={handleEdit}
+                      onDelete={handleDeleteClick}
+                      isUpdating={isUpdating}
+                      isDeleting={isDeleting}
+                    />
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-10 text-center text-gray-500">
+                      No se encontraron autores
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
+
+        <AuthorTablePagination
+          page={page}
+          onPrevPage={handlePrevPage}
+          onNextPage={handleNextPage}
+          filteredCount={filteredAuthors.length}
+          totalElements={data?.totalElements || 0}
+          isLastPage={!data || data.last}
+        />
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort("fullName")}
-              >
-                <div className="flex items-center">
-                  Nombre
-                  {sortField === "fullName" &&
-                    (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort("nationality")}
-              >
-                <div className="flex items-center">
-                  Nacionalidad
-                  {sortField === "nationality" &&
-                    (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
-                </div>
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                onClick={() => handleSort("birthDate")}
-              >
-                <div className="flex items-center">
-                  Año de nacimiento
-                  {sortField === "birthDate" &&
-                    (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
-                </div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Estado
-              </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredAuthors.map((author) => (
-              <tr key={author.uuid} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="font-medium text-gray-900">{author.fullName}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-gray-700">{author.nationality}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-gray-700">{author.birthDate}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-gray-700">{author.statusEntity}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end space-x-2">
-                    <button className="p-1 rounded-full hover:bg-gray-100" title="Ver detalles">
-                      <Eye size={18} className="text-gray-500" />
-                    </button>
-                    <button className="p-1 rounded-full hover:bg-gray-100" title="Editar">
-                      <Edit size={18} className="text-blue-500" />
-                    </button>
-                    <button className="p-1 rounded-full hover:bg-gray-100" title="Eliminar">
-                      <Trash2 size={18} className="text-rose-500" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* Modals */}
+      <SaveAuthorModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSave={handleCreateAuthor}
+        isCreating={isCreating}
+      />
 
-      <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-        <div className="text-sm text-gray-700">
-          Mostrando <span className="font-medium">{filteredAuthors.length}</span> de{" "}
-          <span className="font-medium">{data?.totalElements || 0}</span> autores
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handlePageChange("prev")}
-            className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Anterior
-          </button>
-          <button
-            onClick={() => handlePageChange("next")}
-            className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Siguiente
-          </button>
-        </div>
-      </div>
-    </div>
+      <EditAuthorModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleSaveEdit}
+        author={currentAuthor}
+        formData={editFormData}
+        onChange={handleEditFormChange}
+        isUpdating={isUpdating}
+      />
+
+      <DeleteAuthorModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        author={authorToDelete}
+        isDeleting={isDeleting}
+      />
+    </>
   )
 }
