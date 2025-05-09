@@ -1,5 +1,5 @@
 import { Book, Plus, Filter } from "lucide-react"
-import BookTable from "@/components/dashboard/BookTable"
+import BookTable from "@/components/dashboard/book/BookTable"
 
 export default function LibrosPage() {
   return (

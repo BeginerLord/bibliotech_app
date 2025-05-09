@@ -3,6 +3,7 @@ import type { GetServerSidePropsContext } from "next";
 
 // Obtener las variables de entorno
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const SECRET_KEY = process.env.NEXT_PUBLIC_SECRET_KEY;
 
 // Crear la instancia de Axios para el cliente
