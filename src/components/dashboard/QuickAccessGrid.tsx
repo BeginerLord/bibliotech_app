@@ -41,26 +41,13 @@ const quickAccessItems = [
     color: "bg-rose-500",
   },
   {
-    title: "Búsqueda Avanzada",
-    description: "Búsqueda detallada en el catálogo",
-    icon: Search,
-    href: "/dashboard/busqueda",
-    color: "bg-violet-500",
-  },
-  {
     title: "Catálogo",
     description: "Ver catálogo completo",
     icon: BookOpen,
     href: "/dashboard/categoria",
     color: "bg-teal-500",
   },
-  {
-    title: "Recomendaciones",
-    description: "Libros recomendados",
-    icon: Star,
-    href: "/dashboard/recomendaciones",
-    color: "bg-orange-500",
-  },
+ 
 ]
 
 export default function QuickAccessGrid() {

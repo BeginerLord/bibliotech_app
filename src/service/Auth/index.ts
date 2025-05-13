@@ -1,5 +1,5 @@
 import { bibliotechapi } from "@/api/api";
-import { UserModel } from "@/models/user_model";
+import { UserModel } from "@/models/persons_model";
 import { jwtDecode } from "jwt-decode";
 
 

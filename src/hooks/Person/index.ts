@@ -16,14 +16,13 @@ export const useGetAllUsersActive = (
   page: number = 0,
   size: number = 10,
   sortBy: string = "email",
-  direction: string = "asc",
-  statusEntity: string = "ACTIVE"
+  direction: string = "asc"
 ) => {
   const { isLoading, data, error } = useQuery<PaginatedResponse<UserModelDto>>({
-    queryKey: ["users", page, size, sortBy, direction, statusEntity],
-    queryFn: () => getAllUsersActive(page, size, sortBy, direction, statusEntity),
-    staleTime: 5 * 60 * 1000, // Data is valid for 5 minutes
-    refetchOnWindowFocus: false, // Don't reload data when user returns to window
+    queryKey: ["users", page, size, sortBy, direction, "ACTIVE"],
+    queryFn: () => getAllUsersActive(page, size, sortBy, direction, "ACTIVE"),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   return { isLoading, data, error };
@@ -33,12 +32,11 @@ export const useGetAllUsersInactive = (
   page: number = 0,
   size: number = 10,
   sortBy: string = "email",
-  direction: string = "asc",
-  statusEntity: string = "ARCHIVED"
+  direction: string = "asc"
 ) => {
   const { isLoading, data, error } = useQuery<PaginatedResponse<UserModelDto>>({
-    queryKey: ["users", page, size, sortBy, direction, statusEntity],
-    queryFn: () => getAllUsersInactive(page, size, sortBy, direction, statusEntity),
+    queryKey: ["users", page, size, sortBy, direction, "ARCHIVED"],
+    queryFn: () => getAllUsersInactive(page, size, sortBy, direction, "ARCHIVED"),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
@@ -49,7 +47,10 @@ export const useGetAllUsersInactive = (
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
   const { mutate: createUserMutation, isPending: isCreating, error: createError } = useMutation({
-    mutationFn: (userData: UserModel) => createUser(userData),
+    mutationFn: (userData: UserModel) => createUser({
+      ...userData,
+      status: "ACTIVE" // Aseguramos que el usuario se crea con estado ACTIVE
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },

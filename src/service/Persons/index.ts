@@ -5,11 +5,11 @@ import { PaginatedResponse } from "@/models/PaginatedResponse";
 export const getAllUsersActive = async (
     page: number = 0,
     size: number = 10,
-    sortBy: string = "email", // campo por el que ordenar
-    direction: string = "asc", // dirección de ordenación (ascendente o descendente)
-    statusEntity: string = "ACTIVE" // estado del usuario
+    sortBy: string = "email", 
+    direction: string = "asc", 
+    status: string = "ACTIVE"
 ): Promise<PaginatedResponse<UserModelDto>> => {
-    const url = `/user?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}&statusEntity=${statusEntity}`;
+    const url = `/user?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}&status=${status}`;
     const { data } = await bibliotechapi.get(url);
     return data as PaginatedResponse<UserModelDto>;
 };
@@ -17,11 +17,11 @@ export const getAllUsersActive = async (
 export const getAllUsersInactive = async (
     page: number = 0,
     size: number = 10,
-    sortBy: string = "email", // campo por el que ordenar
-    direction: string = "asc", // dirección de ordenación (ascendente o descendente)
-    statusEntity: string = "ARCHIVED" // estado del usuario
+    sortBy: string = "email",
+    direction: string = "asc", 
+    status: string = "ARCHIVED" 
 ): Promise<PaginatedResponse<UserModelDto>> => {
-    const url = `/user?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}&statusEntity=${statusEntity}`;
+    const url = `/user?page=${page}&size=${size}&sortBy=${sortBy}&direction=${direction}&status=${status}`;
     const { data } = await bibliotechapi.get(url);
     return data as PaginatedResponse<UserModelDto>;
 };
@@ -37,7 +37,12 @@ export const updateUserByDni = async (
 export const createUser = async (
     userData: UserModel
 ): Promise<UserModelDto> => {
-    const { data } = await bibliotechapi.post("/user", userData);
+    // Aseguramos que el usuario se crea con estado ACTIVE
+    const newUser = {
+        ...userData,
+        statusEntity: "ACTIVE"
+    };
+    const { data } = await bibliotechapi.post("/user", newUser);
     return data as UserModelDto;
 };
 

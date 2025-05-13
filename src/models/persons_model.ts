@@ -5,7 +5,7 @@ export interface UserModel {
   phoneNumber: string;
   address: string;
   dni: string;
-  statusEntity?: "ACTIVE" | "INACTIVE";  // Using literal type for better type safety
+  status?: "ACTIVE" | "ARCHIVED";
 }
 
 // DTO for creating a new user
