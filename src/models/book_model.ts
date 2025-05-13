@@ -34,3 +34,14 @@ export interface UpdateBookModel {
   authorsUuids: string[];
   statusEntity: string;       // "ACTIVE" | "INACTIVE"
 }
+
+export interface CopyModel {
+  copyId: string;
+  bookTitle: string;
+  bookId: string;
+  status: string;
+}
+
+export interface BookCopy{
+  id: string;
+}

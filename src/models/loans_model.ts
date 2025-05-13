@@ -7,6 +7,11 @@ export interface LoanModel {
   dueDate: string;      // formato "YYYY-MM-DD"
   returnDate?: string;  // formato "YYYY-MM-DD", opcional
   statusEntity: string; // "ACTIVE" | "ARCHIVED"
+  // Add the user object
+  user?: {
+    firstName: string;
+    lastName: string;
+  };
 }
 
 export interface CreateLoanModel {

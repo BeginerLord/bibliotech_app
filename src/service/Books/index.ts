@@ -1,5 +1,6 @@
 import { bibliotechapi } from "@/api/api";
 import {
+  BookCopy,
   BookModel,
   CreateBookModel,
   UpdateBookModel,
@@ -52,4 +53,8 @@ export const getBookByUuid = async (uuid: string): Promise<BookModel> => {
 
 export const deleteBookByUuid = async (uuid: string): Promise<void> => {
   await bibliotechapi.delete(`/book/${uuid}`);
+};
+export const getActiveBookCopies = async (bookId: string): Promise<BookCopy[]> => {
+  const { data } = await bibliotechapi.get(`/book/${bookId}/active-copies`);
+  return data as BookCopy[];
 };

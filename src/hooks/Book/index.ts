@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookModel, CreateBookModel, UpdateBookModel } from "@/models/book_model";
+import { BookCopy, BookModel, CreateBookModel, UpdateBookModel } from "@/models/book_model";
 import { PaginatedResponse } from "@/models/PaginatedResponse";
-import { createBook, deleteBookByUuid, getAllBooks, getBookByUuid, searchBooksByTitle, updateBookByUuid } from "@/service/Books";
+import { createBook, deleteBookByUuid, getActiveBookCopies, getAllBooks, getBookByUuid, searchBooksByTitle, updateBookByUuid } from "@/service/Books";
 
 export const useGetAllBooks = (
   page: number = 0,
@@ -93,4 +93,15 @@ export const useDeleteBook = () => {
   });
 
   return { deleteBookMutation, isDeleting, deleteError };
+};
+
+export const useGetActiveBookCopies = (bookId: string) => {
+  const { data, isLoading, error } = useQuery<BookCopy[]>({
+    queryKey: ["bookCopies", bookId],
+    queryFn: () => getActiveBookCopies(bookId),
+    staleTime: 5 * 60 * 1000, // Data is valid for 5 minutes
+    enabled: !!bookId, // Don't make the request if no bookId is provided
+  });
+
+  return { data, isLoading, error };
 };
