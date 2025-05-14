@@ -17,3 +17,7 @@ export type UserModelDto = UserModel;
 // For updating a user (all fields optional except for the ones required in update endpoint)
 export type UpdateUserModel = Pick<UserModel, "firstName" | "lastName" | "email" | "phoneNumber" | "address">;
 
+
+export interface CountUserDto {
+  count: string;
+}

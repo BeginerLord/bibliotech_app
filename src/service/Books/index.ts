@@ -2,6 +2,7 @@ import { bibliotechapi } from "@/api/api";
 import {
   BookCopy,
   BookModel,
+  CountCopy,
   CreateBookModel,
   UpdateBookModel,
 } from "@/models/book_model";
@@ -58,3 +59,8 @@ export const getActiveBookCopies = async (bookId: string): Promise<BookCopy[]> =
   const { data } = await bibliotechapi.get(`/book/${bookId}/active-copies`);
   return data as BookCopy[];
 };
+
+export const getCountCopies = async()=>{
+const{data}=await bibliotechapi.get(`/book/copies/count`);
+return data as CountCopy;
+}

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PaginatedResponse } from "@/models/PaginatedResponse";
-import { UserModelDto, UpdateUserModel, UserModel } from "@/models/persons_model";
+import { UserModelDto, UpdateUserModel, UserModel, CountUserDto } from "@/models/persons_model";
 import {
   createUser,
   getAllUsersActive,
@@ -9,8 +9,9 @@ import {
   searchUserByEmail,
   updateUserByDni,
   updateStatusActiveByEmail,
-  updateStatusInactiveByEmail
-} from "@/service/Persons"; 
+  updateStatusInactiveByEmail,
+  getCountUserActive
+} from "@/service/Persons";
 
 export const useGetAllUsersActive = (
   page: number = 0,
@@ -73,7 +74,7 @@ export const useUpdateStatusUserInactive = () => {
       console.error("Error updating user status:", error);
     },
   });
-  
+
   return { updateStatusUserInactiveMutation, isStatusInactive };
 };
 
@@ -88,14 +89,14 @@ export const useUpdateStatusUserActive = () => {
       console.error("Error updating user status:", error);
     },
   });
-  
+
   return { updateStatusUserActiveMutation, isStatusActive };
 };
 
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
   const { mutate: updateUserMutation, isPending: isUpdating, error: updateError } = useMutation({
-    mutationFn: ({ dni, userData }: { dni: string, userData: UpdateUserModel }) => 
+    mutationFn: ({ dni, userData }: { dni: string, userData: UpdateUserModel }) =>
       updateUserByDni(dni, userData),
     onSuccess: (updatedUser) => {
       queryClient.invalidateQueries({ queryKey: ["users", updatedUser.dni] });
@@ -130,3 +131,15 @@ export const useGetUserByDni = (dni: string) => {
 
   return { data, isLoading, error };
 };
+
+export const useGetCountUsersActive = () => {
+  const { data, isLoading, error } = useQuery<CountUserDto>({
+    queryKey: ['users', 'count'],
+    queryFn: () => getCountUserActive(),
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  })
+
+  return { data, isLoading, error }
+
+}

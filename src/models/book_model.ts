@@ -45,3 +45,7 @@ export interface CopyModel {
 export interface BookCopy{
   id: string;
 }
+
+export interface CountCopy{
+  count: string;
+}

@@ -1,5 +1,5 @@
 import { bibliotechapi } from "@/api/api";
-import { UserModel, UserModelDto, UpdateUserModel } from "@/models/persons_model";
+import { UserModel, UserModelDto, UpdateUserModel, CountUserDto } from "@/models/persons_model";
 import { PaginatedResponse } from "@/models/PaginatedResponse";
 
 export const getAllUsersActive = async (
@@ -65,3 +65,8 @@ export const updateStatusInactiveByEmail = async (email: string): Promise<UserMo
     const { data } = await bibliotechapi.put(`/user/updateStatusInactive/${email}`);
     return data as UserModelDto;
 };
+
+export const getCountUserActive = async()=>{
+    const {data}= await bibliotechapi.get(`/user/count/active`);
+    return data as CountUserDto;
+}

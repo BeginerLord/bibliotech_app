@@ -66,3 +66,4 @@ export const getActiveBookCopies = async (bookId: string): Promise<string[]> => 
 export const deleteLoanById = async (loanId: string): Promise<void> => {
   await bibliotechapi.delete(`/loan/delete/${loanId}`);
 };
+
