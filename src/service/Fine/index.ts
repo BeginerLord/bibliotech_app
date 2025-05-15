@@ -13,7 +13,7 @@ export const getAllFines = async (page: number = 0,
 };
 
 export const saveFines = async () => {
-    const { data } = await bibliotechapi.post("/fines");
+    const { data } = await bibliotechapi.post("/fines/generate");
     return data as FineModelDto;
 };
 
