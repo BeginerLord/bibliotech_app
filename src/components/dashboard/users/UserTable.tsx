@@ -10,7 +10,7 @@ import {
   useGetAllUsersInactive,
   useUpdateStatusUserActive, 
   useUpdateStatusUserInactive 
-} from "@/hooks/Person" // Cambiado de @/hooks/Person a @/hooks/User
+} from "@/hooks/Person"
 
 import UserTableHeader from "./UserTableHeader"
 import UserTableRow from "./UserTableRow"
@@ -44,7 +44,7 @@ export default function UserTable() {
     isLoading, 
     data: userData 
   } = showInactive 
-    ? useGetAllUsersInactive(page, size, sortField, sortDirection) // Ya usa ARCHIVED internamente
+    ? useGetAllUsersInactive(page, size, sortField, sortDirection)
     : useGetAllUsersActive(page, size, sortField, sortDirection)
   
   // Mutations para las acciones
@@ -72,7 +72,7 @@ export default function UserTable() {
     try {
       await createUserMutation({
         ...userData,
-        status: "ACTIVE" // Cambiado de statusEntity a status
+        status: "ACTIVE"
       })
       setIsCreateModalOpen(false)
       alert("Usuario creado correctamente")
@@ -102,7 +102,7 @@ export default function UserTable() {
   const handleCheckboxChange = (name: string, checked: boolean) => {
     setEditFormData({
       ...editFormData,
-      [name]: checked ? "ACTIVE" : "ARCHIVED", // Cambiado de INACTIVE a ARCHIVED
+      [name]: checked ? "ACTIVE" : "ARCHIVED",
     })
   }
   
@@ -148,10 +148,10 @@ export default function UserTable() {
     try {
       await updateStatusUserInactiveMutation({ email: currentUser.email })
       setIsDeactivateModalOpen(false)
-      alert("El usuario ha sido desactivado correctamente")
+      alert("Usuario archivado correctamente")
     } catch (error) {
-      alert("Error: No se pudo desactivar al usuario")
-      console.error("Error al desactivar usuario:", error)
+      console.error("Error al archivar el usuario:", error)
+      alert("Error al archivar el usuario")
     }
   }
   
@@ -162,21 +162,24 @@ export default function UserTable() {
     try {
       await updateStatusUserActiveMutation({ email: currentUser.email })
       setIsActivateModalOpen(false)
-      alert("El usuario ha sido activado correctamente")
+      alert("Usuario activado correctamente")
     } catch (error) {
-      alert("Error: No se pudo activar al usuario")
-      console.error("Error al activar usuario:", error)
+      console.error("Error al activar el usuario:", error)
+      alert("Error al activar el usuario")
     }
   }
   
-  // Filtra los usuarios según el término de búsqueda
+  // Filtra los usuarios según el término de búsqueda y añade el campo status
   const filteredUsers = userData?.content?.filter(
     (user) =>
       user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.dni?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || []
+  ).map(user => ({
+    ...user,
+    status: showInactive ? "ARCHIVED" as "ARCHIVED" : "ACTIVE" as "ACTIVE"  // Añadimos el status basado en la vista actual
+  })) || []
 
   // Navegación de páginas
   const handlePrevPage = () => {
@@ -193,90 +196,84 @@ export default function UserTable() {
   
   const toggleUserView = () => {
     setShowInactive(!showInactive)
-    setPage(0) // Reiniciar la paginación al cambiar la vista
+    setPage(0)
   }
 
   return (
     <>
-      <div className="mb-4 flex justify-end">
-        <button 
-          onClick={toggleUserView}
-          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white hover:bg-gray-50"
-        >
-          {showInactive ? "Mostrar usuarios activos" : "Mostrar usuarios archivados"}
-        </button>
-      </div>
-      
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <UserTableHeader 
           searchTerm={searchTerm}
           onSearchChange={(e) => setSearchTerm(e.target.value)}
           onCreateClick={handleOpenCreateModal}
+          showInactive={showInactive}
+          onToggleView={toggleUserView}
         />
 
         <div className="overflow-x-auto">
           {isLoading ? (
-            <div className="flex justify-center items-center p-8">
-              <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-              <span className="ml-2 text-gray-600">Cargando usuarios...</span>
+            <div className="flex justify-center items-center p-10">
+              <Loader2 size={40} className="animate-spin text-gray-400" />
             </div>
           ) : (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th
-                    scope="col"
+                  <th 
+                    scope="col" 
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                     onClick={() => handleSort("firstName")}
                   >
                     <div className="flex items-center">
                       Nombre
-                      {sortField === "firstName" &&
-                        (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
+                      {sortField === "firstName" && (
+                        sortDirection === "asc" ? 
+                          <ChevronUp size={16} className="ml-1" /> : 
+                          <ChevronDown size={16} className="ml-1" />
+                      )}
                     </div>
                   </th>
-                  <th
-                    scope="col"
+                  <th 
+                    scope="col" 
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                     onClick={() => handleSort("dni")}
                   >
                     <div className="flex items-center">
                       DNI
-                      {sortField === "dni" &&
-                        (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
+                      {sortField === "dni" && (
+                        sortDirection === "asc" ? 
+                          <ChevronUp size={16} className="ml-1" /> : 
+                          <ChevronDown size={16} className="ml-1" />
+                      )}
                     </div>
                   </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort("phoneNumber")}
+                  <th 
+                    scope="col" 
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    <div className="flex items-center">
-                      Teléfono
-                      {sortField === "phoneNumber" &&
-                        (sortDirection === "asc" ? <ChevronUp size={15} /> : <ChevronDown size={15} />)}
-                    </div>
+                    Teléfono
                   </th>
-                  <th
-                    scope="col"
+                  <th 
+                    scope="col" 
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     Dirección
                   </th>
-                  <th
-                    scope="col"
+                  <th 
+                    scope="col" 
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     Estado
                   </th>
-                  <th
-                    scope="col"
+                  <th 
+                    scope="col" 
                     className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
                     Acciones
                   </th>
                 </tr>
               </thead>
+              
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredUsers.length > 0 ? (
                   filteredUsers.map((user) => (
@@ -284,8 +281,8 @@ export default function UserTable() {
                       key={user.dni}
                       user={user}
                       onEdit={handleEdit}
-                      onActivate={user.status === "ARCHIVED" ? handleActivateClick : undefined}
-                      onDeactivate={user.status === "ACTIVE" ? handleDeactivateClick : undefined}
+                      onActivate={showInactive ? handleActivateClick : undefined}
+                      onDeactivate={!showInactive ? handleDeactivateClick : undefined}
                       isUpdating={isUpdating && currentUser?.dni === user.dni}
                       isDeleting={false}
                       isChangingStatus={
