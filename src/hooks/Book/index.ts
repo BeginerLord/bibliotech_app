@@ -82,12 +82,21 @@ export const useGetBookByUuid = (uuid: string) => {
 
 export const useDeleteBook = () => {
   const queryClient = useQueryClient();
-  const { mutate: deleteBookMutation, isPending: isDeleting, error: deleteError } = useMutation({
-    mutationFn: (uuid: string) => deleteBookByUuid(uuid),
+  
+  const { mutateAsync: deleteBookMutation, isPending: isDeleting, error: deleteError } = useMutation({
+    mutationFn: async (uuid: string) => {
+      try {
+        const result = await deleteBookByUuid(uuid);
+        return result;
+      } catch (error) {
+        // Asegurarse de propagar el error para que se pueda capturar en el componente
+        throw error;
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["books"] });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error deleting book:", error);
     },
   });

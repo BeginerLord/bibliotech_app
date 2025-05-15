@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useCreateBook, useDeleteBook, useGetAllBooks, useUpdateBook } from "@/hooks/Book";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { BookModel, UpdateBookModel } from "@/models/book_model";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 import BookTableHeader from "./BookTableHeader";
@@ -149,19 +151,54 @@ const handleSaveEdit = async () => {
     setBookToDelete(book);
     setIsDeleteModalOpen(true);
   };
-
-  const handleConfirmDelete = async () => {
-    if (!bookToDelete) return;
+const handleConfirmDelete = async () => {
+  if (!bookToDelete) return;
+  
+  try {
+    await deleteBookMutation(bookToDelete.bookUuid);
     
-    try {
-      await deleteBookMutation(bookToDelete.bookUuid);
-      setIsDeleteModalOpen(false);
-      alert("El libro se ha eliminado correctamente");
-    } catch (error) {
-      alert("Error: No se pudo eliminar el libro");
-      console.error("Error al eliminar libro:", error);
+    // Si llegamos aquí, la eliminación fue exitosa
+    setIsDeleteModalOpen(false);
+    toast.success("El libro se ha eliminado correctamente", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+    
+  } catch (error: any) {
+    setIsDeleteModalOpen(false);
+    
+    // Mejorar la detección de errores de integridad referencial
+    const errorMsg = error?.message || "Error desconocido";
+    
+    if (errorMsg.includes("associated copies") || 
+        errorMsg.toLowerCase().includes("integrity") || 
+        errorMsg.toLowerCase().includes("constraint")) {
+      toast.error("No se puede eliminar el libro porque tiene ejemplares asociados. Debe eliminar los ejemplares primero.", {
+        position: "top-right",
+        autoClose: 6000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        icon: <span role="img" aria-label="locked">🔒</span>,
+      });
+    } else {
+      toast.error(`Error al eliminar el libro: ${errorMsg}`, {
+        position: "top-right",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
-  };
+    console.error("Error al eliminar libro:", error);
+  }
+};
 
   // Ver detalle del libro
   const handleViewClick = (book: BookModel) => {
@@ -172,6 +209,7 @@ const handleSaveEdit = async () => {
 
   return (
     <>
+    <ToastContainer />
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <BookTableHeader
           searchTerm={searchTerm}

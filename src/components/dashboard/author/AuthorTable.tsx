@@ -4,6 +4,8 @@ import { useState } from "react"
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react"
 import { useCreateAuthor, useGetAllAuthors, useUpdateAuthors, useDeleAuthorByUuid } from "@/hooks/Author"
 import { AuthorModel, CreateAuthorDto, UpdateAuthorModel } from "@/models/author_model"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 import AuthorTableHeader from "./AuthorTableHeader"
 import AuthorTableRow from "./AuthorTableRow"
@@ -103,15 +105,48 @@ export default function AuthorTable() {
   }
 
   // Confirmar eliminación
-  const handleConfirmDelete = async () => {
+ const handleConfirmDelete = async () => {
     if (!authorToDelete) return
 
     try {
       await useDeleAuthorMutation(authorToDelete.uuid)
       setIsDeleteModalOpen(false)
-      alert("El autor se ha eliminado correctamente")
-    } catch (error) {
-      alert("Error: No se pudo eliminar el autor")
+      toast.success("El autor se ha eliminado correctamente", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      })
+    } catch (error: any) {
+      setIsDeleteModalOpen(false)
+      
+      // Mejorar la detección de errores de integridad referencial
+      const errorMsg = error?.message || "Error desconocido"
+      
+      if (errorMsg.includes("relacionad con libros") || 
+          errorMsg.toLowerCase().includes("integrity") || 
+          errorMsg.toLowerCase().includes("constraint")) {
+        toast.error("No se puede eliminar el autor porque tiene libros asociados. Debe eliminar los libros primero.", {
+          position: "top-right",
+          autoClose: 6000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          icon: <span role="img" aria-label="locked">🔒</span>,
+        })
+      } else {
+        toast.error(`Error al eliminar el autor: ${errorMsg}`, {
+          position: "top-right",
+          autoClose: 4000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        })
+      }
       console.error("Error al eliminar autor:", error)
     }
   }
@@ -137,6 +172,17 @@ export default function AuthorTable() {
 
   return (
     <>
+     <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <AuthorTableHeader
           searchTerm={searchTerm}

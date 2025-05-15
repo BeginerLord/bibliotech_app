@@ -10,13 +10,16 @@ export const useCreateAuthor = () => {
     const { mutate: createAuthorMutation, isPending } = useMutation({
         mutationFn: saveAuthor,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["author"] });
+            // La clave debe ser "authors" para coincidir con getAllAuthors
+            queryClient.invalidateQueries({ queryKey: ["authors"] });
         },
+        onError: (error) => {
+            console.error("Error al crear autor:", error);
+        }
     });
 
     return { createAuthorMutation, isPending };
 };
- // Asegúrate de importar correctamente
 
 export const useGetAllAuthors = (
   page: number = 0,
@@ -33,18 +36,18 @@ export const useGetAllAuthors = (
   return { isLoading, data, error };  // Retornamos los datos y el error
 };
 
-
-
 export const useUpdateAuthors = () => {
     const queryClient = useQueryClient();
     const { mutate: updateAuthorMutate, isPending } = useMutation({
         mutationFn: ({ uuid, author }: { uuid: string, author: AuthorModel }) => updateAuthorByUuid(uuid, author),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["author"] })
+            // La clave debe ser "authors" para coincidir con getAllAuthors
+            queryClient.invalidateQueries({ queryKey: ["authors"] });
+        },
+        onError: (error) => {
+            console.error("Error al actualizar autor:", error);
         }
-
     });
-
 
     return { updateAuthorMutate, isPending };
 };
@@ -64,22 +67,26 @@ export const useFindAuthorByUuid = () => {
     })
     return { data, isLoading }
 }
+
 export const useDeleAuthorByUuid = () => {
-
     const queryClient = useQueryClient();
-    const { mutate: useDeleAuthorMutation, isPending } = useMutation({
-        mutationFn: deleteAuthortByUuid,
+    const { mutateAsync: useDeleAuthorMutation, isPending } = useMutation({
+        mutationFn: async (uuid: string) => {
+            try {
+                const result = await deleteAuthortByUuid(uuid);
+                return result;
+            } catch (error) {
+                // Asegurarse de propagar el error para que se pueda capturar en el componente
+                throw error;
+            }
+        },
         onSuccess: () => {
-
-            queryClient.invalidateQueries({ queryKey: ["author"] })
-
-        }
-        , onError: (error) => {
+            queryClient.invalidateQueries({ queryKey: ["authors"] });
+        },
+        onError: (error: any) => {
             console.error("Error al eliminar autor:", error);
         }
-
-    })
+    });
 
     return { useDeleAuthorMutation, isPending };
-
 }

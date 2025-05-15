@@ -40,11 +40,22 @@ export const getAuthorByName = async (fullName: string) => {
     const { data } = await bibliotechapi.get(`/author/fullName/${fullName}`);
     return data as AuthorModel;
 }
-
-
-
-
 export const deleteAuthortByUuid = async (uuid: string) => {
-    const { data } = await bibliotechapi.delete(`/author/${uuid}`);
-    return data;
+    try {
+        const { data } = await bibliotechapi.delete(`/author/${uuid}`);
+        return data;
+    } catch (error: any) {
+        // Capturar específicamente los errores de Axios
+        if (error.response) {
+            // El servidor respondió con un status fuera del rango de 2xx
+            const errorData = error.response.data || {};
+            throw new Error(errorData.message || "Error al eliminar el autor");
+        } else if (error.request) {
+            // La petición fue hecha pero no se recibió respuesta
+            throw new Error("No hay respuesta del servidor");
+        } else {
+            // Algo ocurrió al configurar la petición que desencadenó un error
+            throw new Error(error.message || "Error desconocido");
+        }
+    }
 }

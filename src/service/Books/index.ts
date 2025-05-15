@@ -53,7 +53,23 @@ export const getBookByUuid = async (uuid: string): Promise<BookModel> => {
 };
 
 export const deleteBookByUuid = async (uuid: string): Promise<void> => {
-  await bibliotechapi.delete(`/book/${uuid}`);
+  try {
+    const response = await bibliotechapi.delete(`/book/${uuid}`);
+    return response.data;
+  } catch (error: any) {
+    // Capturar específicamente los errores de Axios
+    if (error.response) {
+      // El servidor respondió con un status fuera del rango de 2xx
+      const errorData = error.response.data || {};
+      throw new Error(errorData.message || "Error al eliminar el libro");
+    } else if (error.request) {
+      // La petición fue hecha pero no se recibió respuesta
+      throw new Error("No hay respuesta del servidor");
+    } else {
+      // Algo ocurrió al configurar la petición que desencadenó un error
+      throw new Error(error.message || "Error desconocido");
+    }
+  }
 };
 export const getActiveBookCopies = async (bookId: string): Promise<BookCopy[]> => {
   const { data } = await bibliotechapi.get(`/book/${bookId}/active-copies`);
