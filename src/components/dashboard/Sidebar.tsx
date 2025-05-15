@@ -97,7 +97,7 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* User Section */}
+        {/* User Section 
         <div className="border-t border-gray-200 p-4">
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mr-3">
@@ -112,7 +112,7 @@ export default function Sidebar() {
             <LogOut size={16} className="mr-2" />
             Cerrar sesión
           </button>
-        </div>
+        </div>*/}
       </aside>
     </>
   )
