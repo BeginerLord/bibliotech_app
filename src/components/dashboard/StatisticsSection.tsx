@@ -1,17 +1,49 @@
-"use client"
-
-import { motion } from "framer-motion"
-import { Book, Users, FileText, AlertTriangle, TrendingUp } from "lucide-react"
-
-// En un entorno real, estos datos vendrían de una API
-const mockStats = [
-  { title: "Total de Libros", value: "2,483", icon: Book, color: "bg-blue-500", trend: "+12%" },
-  { title: "Usuarios Registrados", value: "873", icon: Users, color: "bg-emerald-500", trend: "+8%" },
-  { title: "Préstamos Activos", value: "152", icon: FileText, color: "bg-amber-500", trend: "-3%" },
-  { title: "Multas Pendientes", value: "28", icon: AlertTriangle, color: "bg-rose-500", trend: "-5%" },
-]
+"use client";
+import { useGetCountCopies } from "@/hooks/Book";
+import { useCountFines } from "@/hooks/Fine";
+import { useGetLoansCount } from "@/hooks/Loans";
+import { useGetCountUsersActive } from "@/hooks/Person";
+import { AlertTriangle, Book, FileText, TrendingUp, Users } from "lucide-react";
+import { motion } from 'framer-motion'; 
 
 export default function StatisticsSection() {
+  // Obtenemos datos reales de las APIs
+  const { data: loansCount, isLoading: isLoansCountLoading } = useGetLoansCount();
+  const { data: bookCopiesData, isLoading: isBookCopiesLoading } = useGetCountCopies();
+  const { data: finesData, isLoading: isFinesLoading } = useCountFines();
+  const { data: usersData, isLoading: isUsersLoading } = useGetCountUsersActive();
+  
+  const mockStats = [
+    { 
+      title: "Total de Libros", 
+      value: isBookCopiesLoading ? "..." : String(bookCopiesData?.totalCount|| 0), 
+      icon: Book, 
+      color: "bg-blue-500", 
+      trend: "+12%" 
+    },
+    { 
+      title: "Usuarios Registrados", 
+      value: isUsersLoading ? "..." : String(usersData?.count || 0), 
+      icon: Users, 
+      color: "bg-emerald-500", 
+      trend: "+8%" 
+    },
+    { 
+      title: "Préstamos Activos", 
+      value: isLoansCountLoading ? "..." : String(loansCount || 0), 
+      icon: FileText, 
+      color: "bg-amber-500", 
+      trend: "-3%" 
+    },
+    { 
+      title: "Multas Pendientes", 
+      value: isFinesLoading ? "..." : String(finesData?.count || 0), 
+      icon: AlertTriangle, 
+      color: "bg-rose-500", 
+      trend: "-5%" 
+    },
+  ]
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {mockStats.map((stat, index) => (

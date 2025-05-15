@@ -47,5 +47,5 @@ export interface BookCopy{
 }
 
 export interface CountCopy{
-  count: string;
+   totalCount: number;
 }

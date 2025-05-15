@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BookCopy, BookModel, CreateBookModel, UpdateBookModel } from "@/models/book_model";
+import { BookCopy, BookModel, CountCopy, CreateBookModel, UpdateBookModel } from "@/models/book_model";
 import { PaginatedResponse } from "@/models/PaginatedResponse";
-import { createBook, deleteBookByUuid, getActiveBookCopies, getAllBooks, getBookByUuid, searchBooksByTitle, updateBookByUuid } from "@/service/Books";
+import { createBook, deleteBookByUuid, getActiveBookCopies, getAllBooks, getBookByUuid, getCountCopies, searchBooksByTitle, updateBookByUuid } from "@/service/Books";
 
 export const useGetAllBooks = (
   page: number = 0,
@@ -101,6 +101,16 @@ export const useGetActiveBookCopies = (bookId: string) => {
     queryFn: () => getActiveBookCopies(bookId),
     staleTime: 5 * 60 * 1000, // Data is valid for 5 minutes
     enabled: !!bookId, // Don't make the request if no bookId is provided
+  });
+
+  return { data, isLoading, error };
+};
+
+export const useGetCountCopies = () => {
+  const { data, isLoading, error } = useQuery<CountCopy>({
+    queryKey: ["bookCopies", "count"],
+    queryFn: () => getCountCopies(),
+    staleTime: 5 * 60 * 1000, // Data is valid for 5 minutes
   });
 
   return { data, isLoading, error };
