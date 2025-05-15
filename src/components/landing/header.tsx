@@ -47,7 +47,7 @@ export default function Header() {
             </Link>
           ))}
           <Link
-            href="#get-started"
+            href="dashboard"
             className="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition-colors duration-300 font-medium"
           >
             Get Started
@@ -84,7 +84,7 @@ export default function Header() {
               </Link>
             ))}
             <Link
-              href="#get-started"
+              href="dashboard"
               className="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition-colors duration-300 font-medium text-center"
               onClick={toggleMenu}
             >

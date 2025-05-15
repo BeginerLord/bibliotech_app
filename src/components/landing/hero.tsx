@@ -25,13 +25,13 @@ export default function Hero() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                href="#get-started"
+                href="dashboard"
                 className="bg-emerald-600 text-white px-6 py-3 rounded-full hover:bg-emerald-700 transition-all duration-300 font-medium text-center shadow-lg hover:shadow-xl hover:-translate-y-1"
               >
                 Get Started Free
               </Link>
               <Link
-                href="#demo"
+                href="dashboard"
                 className="bg-white text-emerald-600 border border-emerald-600 px-6 py-3 rounded-full hover:bg-emerald-50 transition-all duration-300 font-medium text-center"
               >
                 Watch Demo
